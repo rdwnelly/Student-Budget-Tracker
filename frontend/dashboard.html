@@ -11,64 +11,186 @@
   <body>
     <header>
       <h1>Student Budget Tracker</h1>
-      <div>
+      <div class="header-right">
         <span id="user-name"></span>
         <button id="logout-btn">Logout</button>
       </div>
     </header>
 
     <main class="container">
-      <section id="budget-alerts-section" class="card">
-        <h2>🚨 Peringatan Anggaran Bulan Ini</h2>
-        <div id="budget-alerts"></div>
-      </section>
+      <div class="grid-container">
+        <section id="budget-alerts-section" class="card">
+          <h2>🚨 Peringatan Anggaran Bulan Ini</h2>
+          <div id="budget-alerts"></div>
+        </section>
 
-      <section class="visuals">
         <div class="card chart-container">
           <h2>Komposisi Pengeluaran</h2>
           <canvas id="expense-pie-chart"></canvas>
         </div>
+
         <div class="card chart-container">
           <h2>Perbandingan Bulanan</h2>
           <canvas id="monthly-bar-chart"></canvas>
+        </div>
+      </div>
+
+      <section id="settings-section" class="card">
+        <h2>Pengaturan</h2>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap">
+          <button id="manage-budget-btn" class="btn btn-primary">
+            Atur Anggaran Bulan Ini
+          </button>
+          <button id="manage-categories-btn" class="btn btn-primary">
+            Kelola Kategori
+          </button>
         </div>
       </section>
 
       <section id="add-transaction-section" class="card">
         <h2>Tambah Transaksi Baru</h2>
         <form id="transaction-form">
-          <select id="category-select" required></select>
+          <select id="transaction-category-select" required></select>
           <input
             type="number"
-            id="amount"
+            id="transaction-amount"
             placeholder="Jumlah (contoh: 50000)"
             required
           />
           <input
             type="text"
-            id="description"
+            id="transaction-description"
             placeholder="Deskripsi (contoh: Makan siang)"
           />
           <input type="date" id="transaction-date" required />
-          <button type="submit">Tambah</button>
+          <button type="submit" class="btn btn-secondary">Tambah</button>
         </form>
       </section>
 
       <section class="card">
         <h2>Riwayat Transaksi</h2>
-        <table id="transaction-table">
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>Kategori</th>
-              <th>Deskripsi</th>
-              <th>Jumlah</th>
-            </tr>
-          </thead>
-          <tbody id="transaction-list"></tbody>
-        </table>
+        <div class="table-container">
+          <table id="transaction-table">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Kategori</th>
+                <th>Deskripsi</th>
+                <th>Jumlah</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="transaction-list"></tbody>
+          </table>
+        </div>
       </section>
     </main>
+
+    <div id="edit-transaction-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Edit Transaksi</h2>
+        <form id="edit-transaction-form" class="modal-form">
+          <input type="hidden" id="edit-transaction-id" />
+          <div class="form-group">
+            <label for="edit-transaction-date">Tanggal</label>
+            <input type="date" id="edit-transaction-date" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-transaction-category">Kategori</label>
+            <select id="edit-transaction-category" required></select>
+          </div>
+          <div class="form-group">
+            <label for="edit-transaction-amount">Jumlah</label>
+            <input type="number" id="edit-transaction-amount" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-transaction-description">Deskripsi</label>
+            <input type="text" id="edit-transaction-description" />
+          </div>
+          <button type="submit" class="btn btn-primary">
+            Simpan Perubahan
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="category-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Kelola Kategori</h2>
+
+        <form id="category-form" class="modal-form">
+          <input type="hidden" id="category-id" />
+          <h3>Tambah/Edit Kategori</h3>
+          <div class="form-group">
+            <label for="category-name">Nama Kategori</label>
+            <input
+              type="text"
+              id="category-name"
+              placeholder="cth: Bensin, Proyek Freelance"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="category-type">Tipe</label>
+            <select id="category-type" required>
+              <option value="pengeluaran">Pengeluaran</option>
+              <option value="pemasukan">Pemasukan</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-secondary">
+            Simpan Kategori
+          </button>
+          <button
+            type="button"
+            id="cancel-edit-category-btn"
+            class="btn btn-danger"
+            style="display: none"
+          >
+            Batal Edit
+          </button>
+        </form>
+
+        <hr style="margin: 30px 0" />
+
+        <h3>Kategori Anda</h3>
+        <div class="table-container">
+          <table id="category-table">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Tipe</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="custom-category-list"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="budget-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Atur Anggaran Bulan Ini</h2>
+        <form id="budget-form">
+          <select id="budget-category-select" required></select>
+          <input
+            type="number"
+            id="budget-amount"
+            placeholder="Jumlah Anggaran"
+            required
+          />
+          <button type="submit" class="btn btn-secondary">Set Budget</button>
+        </form>
+
+        <hr style="margin: 30px 0" />
+
+        <h3>Anggaran Saat Ini</h3>
+        <div id="current-budgets-list"></div>
+      </div>
+    </div>
 
     <script src="js/main.js"></script>
   </body>

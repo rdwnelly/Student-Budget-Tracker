@@ -1,15 +1,29 @@
 /* Reset & Basic Styling */
+:root {
+  --primary-color: #007aff;
+  --primary-hover-color: #005ecb;
+  --secondary-color: #34c759;
+  --danger-color: #ff3b30;
+  --warning-color: #ff9500;
+  --light-gray: #f4f7f6;
+  --medium-gray: #ddd;
+  --dark-gray: #333;
+  --white: #fff;
+  --shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  background-color: #f4f7f6;
-  color: #333;
+  background-color: var(--light-gray);
+  color: var(--dark-gray);
   margin: 0;
   line-height: 1.6;
 }
 
 .container {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 20px auto;
   padding: 0 20px;
 }
@@ -24,10 +38,10 @@ body {
 }
 
 .auth-form {
-  background: white;
+  background: var(--white);
   padding: 40px;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
   width: 100%;
   max-width: 400px;
 }
@@ -35,14 +49,14 @@ body {
 .auth-form h2 {
   text-align: center;
   margin-bottom: 20px;
-  color: #007aff;
+  color: var(--primary-color);
 }
 
 .auth-form input {
   width: 100%;
   padding: 10px;
   margin-bottom: 15px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--medium-gray);
   border-radius: 5px;
   box-sizing: border-box;
 }
@@ -51,8 +65,8 @@ body {
   width: 100%;
   padding: 12px;
   border: none;
-  background-color: #007aff;
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--white);
   font-size: 16px;
   border-radius: 5px;
   cursor: pointer;
@@ -60,7 +74,7 @@ body {
 }
 
 .auth-form button:hover {
-  background-color: #005ecb;
+  background-color: var(--primary-hover-color);
 }
 
 .auth-form p {
@@ -69,7 +83,7 @@ body {
 }
 
 .auth-form a {
-  color: #007aff;
+  color: var(--primary-color);
   text-decoration: none;
 }
 
@@ -82,21 +96,28 @@ body {
 
 /* Header Dashboard */
 header {
-  background: #fff;
+  background: var(--white);
   padding: 15px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-light);
+  flex-wrap: wrap;
 }
 
 header h1 {
-  color: #007aff;
+  color: var(--primary-color);
   margin: 0;
+  font-size: 1.5rem;
+}
+
+header .header-right {
+  display: flex;
+  align-items: center;
 }
 
 header button {
-  background: #ff3b30;
+  background: var(--danger-color);
   color: white;
   border: none;
   padding: 8px 15px;
@@ -111,16 +132,20 @@ header #user-name {
 
 /* Main Content */
 .card {
-  background: white;
+  background: var(--white);
   padding: 25px;
   margin-bottom: 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-light);
 }
 
-.visuals {
+.card h2 {
+  margin-top: 0;
+}
+
+.grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 20px;
 }
 
@@ -131,8 +156,39 @@ header #user-name {
   box-sizing: border-box;
 }
 
-/* Form Transaksi */
-#transaction-form {
+/* Tombol Aksi */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  transition: opacity 0.2s;
+}
+.btn:hover {
+  opacity: 0.85;
+}
+.btn-primary {
+  background-color: var(--primary-color);
+}
+.btn-secondary {
+  background-color: var(--secondary-color);
+}
+.btn-danger {
+  background-color: var(--danger-color);
+}
+.btn-warning {
+  background-color: var(--warning-color);
+}
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+}
+
+/* Form Transaksi & Budget */
+#transaction-form,
+#budget-form {
   display: flex;
   gap: 15px;
   align-items: center;
@@ -140,36 +196,173 @@ header #user-name {
 }
 
 #transaction-form input,
-#transaction-form select {
+#transaction-form select,
+#budget-form input,
+#budget-form select {
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--medium-gray);
   border-radius: 5px;
   flex: 1;
+  min-width: 150px; /* Mencegah input menjadi terlalu kecil */
 }
 
-#transaction-form button {
+#transaction-form button,
+#budget-form button {
   padding: 10px 20px;
   border: none;
-  background-color: #34c759;
+  background-color: var(--secondary-color);
   color: white;
   border-radius: 5px;
   cursor: pointer;
 }
 
-/* Tabel Transaksi */
-#transaction-table {
+/* Tabel Transaksi & Kategori */
+.table-container {
+  overflow-x: auto; /* Membuat tabel bisa di-scroll horizontal di layar kecil */
+}
+
+#transaction-table,
+#category-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
 }
 
 #transaction-table th,
-#transaction-table td {
+#transaction-table td,
+#category-table th,
+#category-table td {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #eee;
+  white-space: nowrap; /* Mencegah teks turun baris */
 }
 
-#transaction-table th {
+#transaction-table th,
+#category-table th {
   background-color: #f8f8f8;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Budget Alert */
+#budget-alerts .alert {
+  margin-bottom: 15px;
+}
+#budget-alerts .progress-bar-container {
+  background: #eee;
+  border-radius: 5px;
+  overflow: hidden;
+  height: 15px;
+  margin-top: 5px;
+}
+#budget-alerts .progress-bar {
+  height: 100%;
+  transition: width 0.5s ease-in-out;
+}
+
+/* Modal Styling */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s;
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 10% auto;
+  padding: 30px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
+  border-radius: 8px;
+  position: relative;
+  animation: slideIn 0.3s;
+}
+
+.close-btn {
+  color: #aaa;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-form .form-group {
+  margin-bottom: 15px;
+}
+.modal-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+.modal-form input,
+.modal-form select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--medium-gray);
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+/* Animasi Modal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Tampilan Responsif */
+@media screen and (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .grid-container {
+    grid-template-columns: 1fr;
+  }
+
+  #transaction-form,
+  #budget-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modal-content {
+    width: 90%;
+    margin: 20% auto;
+  }
 }

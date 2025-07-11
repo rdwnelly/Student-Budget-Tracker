@@ -1,5 +1,9 @@
 const db = require("../config/db");
 
+// ===============================================
+// FUNGSI UNTUK KATEGORI
+// ===============================================
+
 // Mengambil semua kategori (default dan milik user)
 exports.getCategories = async (req, res) => {
   try {
@@ -13,6 +17,83 @@ exports.getCategories = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
+
+// Menambah kategori baru oleh user
+exports.addCategory = async (req, res) => {
+  const { name, type } = req.body;
+  try {
+    const newCategory = await db.query(
+      "INSERT INTO categories (user_id, name, type, is_default) VALUES ($1, $2, $3, FALSE) RETURNING *",
+      [req.user.id, name, type]
+    );
+    res.json(newCategory.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+// Mengupdate kategori milik user
+exports.updateCategory = async (req, res) => {
+  const { name, type } = req.body;
+  const { id } = req.params;
+  try {
+    const updatedCategory = await db.query(
+      "UPDATE categories SET name = $1, type = $2 WHERE category_id = $3 AND user_id = $4 RETURNING *",
+      [name, type, id, req.user.id]
+    );
+    if (updatedCategory.rows.length === 0) {
+      return res
+        .status(404)
+        .json({
+          msg: "Kategori tidak ditemukan atau Anda tidak punya hak akses.",
+        });
+    }
+    res.json(updatedCategory.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+// Menghapus kategori milik user
+exports.deleteCategory = async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Cek dulu apakah kategori ini dipakai di transaksi
+    const usage = await db.query(
+      "SELECT 1 FROM transactions WHERE category_id = $1",
+      [id]
+    );
+    if (usage.rows.length > 0) {
+      return res
+        .status(400)
+        .json({
+          msg: "Tidak bisa menghapus kategori yang sudah digunakan dalam transaksi.",
+        });
+    }
+
+    const deletedCategory = await db.query(
+      "DELETE FROM categories WHERE category_id = $1 AND user_id = $2 AND is_default = FALSE RETURNING *",
+      [id, req.user.id]
+    );
+    if (deletedCategory.rows.length === 0) {
+      return res
+        .status(404)
+        .json({
+          msg: "Kategori tidak ditemukan, tidak bisa dihapus, atau bukan milik Anda.",
+        });
+    }
+    res.json({ msg: "Kategori berhasil dihapus." });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+// ===============================================
+// FUNGSI UNTUK TRANSAKSI
+// ===============================================
 
 // Menambah transaksi baru
 exports.addTransaction = async (req, res) => {
@@ -37,7 +118,7 @@ exports.getTransactions = async (req, res) => {
              FROM transactions t
              JOIN categories c ON t.category_id = c.category_id
              WHERE t.user_id = $1
-             ORDER BY t.transaction_date DESC`,
+             ORDER BY t.transaction_date DESC, t.created_at DESC`,
       [req.user.id]
     );
     res.json(transactions.rows);
@@ -47,11 +128,55 @@ exports.getTransactions = async (req, res) => {
   }
 };
 
+// Mengupdate transaksi
+exports.updateTransaction = async (req, res) => {
+  const { id } = req.params;
+  const { category_id, amount, description, transaction_date } = req.body;
+  try {
+    const updatedTransaction = await db.query(
+      `UPDATE transactions 
+             SET category_id = $1, amount = $2, description = $3, transaction_date = $4
+             WHERE transaction_id = $5 AND user_id = $6 RETURNING *`,
+      [category_id, amount, description, transaction_date, id, req.user.id]
+    );
+
+    if (updatedTransaction.rows.length === 0) {
+      return res.status(404).json({ msg: "Transaksi tidak ditemukan." });
+    }
+    res.json(updatedTransaction.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+// Menghapus transaksi
+exports.deleteTransaction = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deleteOp = await db.query(
+      "DELETE FROM transactions WHERE transaction_id = $1 AND user_id = $2",
+      [id, req.user.id]
+    );
+
+    if (deleteOp.rowCount === 0) {
+      return res.status(404).json({ msg: "Transaksi tidak ditemukan." });
+    }
+    res.json({ msg: "Transaksi berhasil dihapus." });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+// ===============================================
+// FUNGSI UNTUK BUDGET
+// ===============================================
+
 // Mengatur atau update budget
 exports.setBudget = async (req, res) => {
   const { category_id, amount, month, year } = req.body;
   try {
-    // Coba update dulu, kalau tidak ada, baru insert (UPSERT)
     const budget = await db.query(
       `INSERT INTO budgets (user_id, category_id, amount, month, year)
              VALUES ($1, $2, $3, $4, $5)
@@ -67,9 +192,31 @@ exports.setBudget = async (req, res) => {
   }
 };
 
+// Mengambil budget yang sudah di-set user
+exports.getBudgets = async (req, res) => {
+  const { month, year } = req.query;
+  try {
+    const budgets = await db.query(
+      `SELECT b.category_id, c.name as category_name, b.amount, c.type
+             FROM budgets b
+             JOIN categories c ON b.category_id = c.category_id
+             WHERE b.user_id = $1 AND b.month = $2 AND b.year = $3`,
+      [req.user.id, month, year]
+    );
+    res.json(budgets.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+// ===============================================
+// FUNGSI UNTUK DASHBOARD
+// ===============================================
+
 // Mengambil data untuk visualisasi dashboard
 exports.getDashboardData = async (req, res) => {
-  const { month, year } = req.query; // contoh: ?month=6&year=2025 (bulan Juni)
+  const { month, year } = req.query;
   const userId = req.user.id;
 
   try {
